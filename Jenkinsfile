@@ -1,7 +1,7 @@
 pipeline {
 agent any
 
-```
+
 environment {
     IMAGE_NAME = "vamsi124/scientific-calculator"
 }
@@ -68,7 +68,7 @@ post {
         )
     }
 }
-```
+
 
 }
 
