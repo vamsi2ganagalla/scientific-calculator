@@ -1,7 +1,7 @@
 pipeline {
 agent any
 
-
+```
 environment {
     IMAGE_NAME = "vamsi124/scientific-calculator"
 }
@@ -23,7 +23,7 @@ stages {
     stage('Build Docker Image') {
         steps {
             sh '''
-       	    docker build -t $IMAGE_NAME:$BUILD_NUMBER .
+            docker build -t $IMAGE_NAME:$BUILD_NUMBER .
             docker tag $IMAGE_NAME:$BUILD_NUMBER $IMAGE_NAME:latest
             '''
         }
@@ -32,24 +32,61 @@ stages {
     stage('Push Docker Image') {
         steps {
             withCredentials([usernamePassword(credentialsId: 'dockerhub-creds',
-                                              usernameVariable: 'DOCKER_USER',
-                                              passwordVariable: 'DOCKER_PASS')]) {
+                usernameVariable: 'DOCKER_USER',
+                passwordVariable: 'DOCKER_PASS')]) {
+
                 sh '''
                 echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
                 docker push $IMAGE_NAME:$BUILD_NUMBER
-		docker push $IMAGE_NAME:latest
+                docker push $IMAGE_NAME:latest
                 '''
             }
         }
     }
-    stage('Deploy with Ansible') { 
-	steps { 
-		sh 'ansible-playbook ansible/deploy.yml -i ansible/hosts' 
-	   } 
-	}
+
+    stage('Deploy with Ansible') {
+        steps {
+            sh 'ansible-playbook ansible/deploy.yml -i ansible/hosts'
+        }
+    }
 
 }
 
+post {
+
+    success {
+        emailext(
+            subject: "SUCCESS: ${JOB_NAME} Build #${BUILD_NUMBER}",
+            body: """
+            Build succeeded!
+
+            Job Name: ${JOB_NAME}
+            Build Number: ${BUILD_NUMBER}
+
+            Check console output:
+            ${BUILD_URL}
+            """,
+            to: "g.vamsi2001@gmail.com"
+        )
+    }
+
+    failure {
+        emailext(
+            subject: "FAILED: ${JOB_NAME} Build #${BUILD_NUMBER}",
+            body: """
+            Build FAILED!
+
+            Job Name: ${JOB_NAME}
+            Build Number: ${BUILD_NUMBER}
+
+            Check console output:
+            ${BUILD_URL}
+            """,
+            to: "g.vamsi2001@gmail.com"
+        )
+    }
+}
+```
 
 }
 
