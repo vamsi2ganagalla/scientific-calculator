@@ -49,23 +49,13 @@ stages {
             sh 'ansible-playbook ansible/deploy.yml -i ansible/hosts'
         }
     }
-
 }
 
 post {
-
     success {
         emailext(
             subject: "SUCCESS: ${JOB_NAME} Build #${BUILD_NUMBER}",
-            body: """
-            Build succeeded!
-
-            Job Name: ${JOB_NAME}
-            Build Number: ${BUILD_NUMBER}
-
-            Check console output:
-            ${BUILD_URL}
-            """,
+            body: "Build succeeded! Check details: ${BUILD_URL}",
             to: "g.vamsi2001@gmail.com"
         )
     }
@@ -73,15 +63,7 @@ post {
     failure {
         emailext(
             subject: "FAILED: ${JOB_NAME} Build #${BUILD_NUMBER}",
-            body: """
-            Build FAILED!
-
-            Job Name: ${JOB_NAME}
-            Build Number: ${BUILD_NUMBER}
-
-            Check console output:
-            ${BUILD_URL}
-            """,
+            body: "Build failed! Check console output: ${BUILD_URL}",
             to: "g.vamsi2001@gmail.com"
         )
     }
